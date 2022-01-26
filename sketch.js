@@ -36,6 +36,8 @@ function preload(){
 
   ammoBoxImg = loadImage("assets/ammo.png");
 
+  restartImg = loadImage("assets/restart.png");
+
   explosion = loadSound("assets/explosion.mp3");
   lose = loadSound("assets/lose.mp3");
   win = loadSound("assets/win.mp3");
@@ -55,6 +57,10 @@ player.addImage(shooterImg);
 player.scale = 0.3;
 //player.debug = true;
 player.setCollider("rectangle",0,0,200,500);
+
+restart = createSprite(width/2, 150);
+restart.addImage(restartImg);
+restart.scale = 0.5;
 
 ammoBox = createSprite(width/2, height-100);
 ammoBox.addImage(ammoBoxImg);
@@ -103,6 +109,8 @@ function draw() {
 
   if(gameState=="play"){
       //moving the player up and down and making the game mobile compatible using touches
+
+      restart.visible = false;
 
       if(keyDown("UP_ARROW") && player.y>150){
         player.y -= 30;
@@ -172,24 +180,28 @@ function draw() {
         //win.play();
         gameState = "noBullets";
       }
-     
-
   }//end of "play"
   else if(gameState=="end"){
+    restart.visible = true;
+    restart.onMousePressed = reset;
     textAlign(CENTER);
     textSize(35);
     fill("red");
     text("Out of life. You have lost the game!", width/2, height/2);
-    player.remove();
+    player.scale = 0.001;
     zombieGroup.setVelocityXEach(0);
   }
   else if(gameState=="won"){
+    restart.visible = true;
+    restart.onMousePressed = reset;
     zombieGroup.destroyEach();
     textAlign(CENTER);
     textSize(35);
     text("Yo! You have killed "+score+" zombies!", width/2, height/2);
   }
   else if(gameState=="noBullets"){
+    restart.visible = true;
+    restart.onMousePressed = reset;
     textAlign(CENTER);
     textSize(35);
     text("Oh no! You are out of bullets", width/2, height/2);
@@ -198,6 +210,20 @@ function draw() {
     zombieGroup.setLifetimeEach(-1);
     bulletGroup.destroyEach();
   }
+}
+
+//to reset the game
+function reset(){
+  gameState = "play";
+  score = 0;
+  bullets = 10;
+  killPercentage = 0;
+  life = 3;
+  zombieCounter = 0;
+  player.scale = 0.3;
+  player.x = 120;
+  player.y = height/2;
+  zombieGroup.destroyEach();
 }
 
 //creating function to spawn zombies
@@ -220,8 +246,9 @@ function enemy(){
 function shoot(){
     //giving random x and y positions for zombie to appear
     bullet = createSprite(player.x,player.y-25 ,20,20)
-
     bullet.addImage(bulletImg);
+
+    // to flip the image
     bullet.mirrorX(-1);
     
     bullet.depth = 1;
